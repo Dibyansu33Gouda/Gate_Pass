@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Visitor Directory - GatePass{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Visitor Directory</h1><p class="page-subtitle">Indexed search by phone number or name (3NF)</p></div>
+  <div><a href="/visitors/new" class="btn btn-primary btn-sm">+ Register New Visitor</a></div>
+</div>
+
+<div class="card">
+  <form method="GET" action="/visitors" class="search-form" style="margin-bottom: 1.25rem;">
+    <input type="text" name="q" class="form-control" placeholder="Search visitor name or phone..." value="{{ q }}" style="max-width: 350px;">
+    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+    {% if q %}<a href="/visitors" class="btn btn-secondary btn-sm">Clear</a>{% endif %}
+  </form>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>ID</th><th>Visitor Name</th><th>Phone</th><th>Visits</th><th>Last Visit</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for v in visitors %}
+        <tr>
+          <td>#{{ v.visitor_id }}</td><td style="font-weight: 600;">{{ v.visitor_name }}</td><td><code>{{ v.phone }}</code></td>
+          <td>{{ v.total_visits }}</td><td>{{ v.last_visit_date if v.last_visit_date else '—' }}</td>
+          <td>{% if v.is_active %}<span class="badge badge-approved">Active</span>{% else %}<span class="badge badge-rejected">Deactivated</span>{% endif %}</td>
+          <td>
+            <form method="POST" action="/visitors/{{ v.visitor_id }}/toggle-active" style="display: inline;">
+              <button type="submit" class="btn {% if v.is_active %}btn-danger{% else %}btn-success{% endif %} btn-sm">{% if v.is_active %}Deactivate{% else %}Activate{% endif %}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No visitors found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

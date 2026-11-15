@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Visit History View - GatePass{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Historical Visit Audit Log</h1><p class="page-subtitle">Powered by Database View: <code>v_visit_history</code> (DBMS Concept 7)</p></div>
+</div>
+
+<div class="card" style="background-color: #eff6ff; border-color: #bfdbfe;">
+  <p style="font-size: 0.85rem; color: #1e40af;"><strong>ℹ️ Concept 7:</strong> Executes <code>SELECT * FROM v_visit_history</code>, an abstract view encapsulating a 4-table join.</p>
+</div>
+
+<div class="card">
+  <form method="GET" action="/history">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="date">Date</label>
+        <input type="date" id="date" name="date" class="form-control" value="{{ selected_date }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="resident_name">Resident</label>
+        <select id="resident_name" name="resident_name" class="form-control">
+          <option value="">-- All Residents --</option>
+          {% for r in resident_options %}<option value="{{ r }}" {% if selected_resident == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="approval_status">Status</label>
+        <select id="approval_status" name="approval_status" class="form-control">
+          <option value="">-- All Statuses --</option>
+          {% for s in ["Approved", "Pending", "Rejected", "Cancelled"] %}<option value="{{ s }}" {% if selected_status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-actions"><a href="/history" class="btn btn-secondary btn-sm">Reset</a><button type="submit" class="btn btn-primary btn-sm">Filter</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-title"><span>View Results</span><span style="font-size: 0.85rem; color: #64748b;">{{ history_records|length }} record(s)</span></div>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>ID</th><th>Date</th><th>Visitor</th><th>Phone</th><th>Resident / Flat</th><th>Purpose</th><th>Guard</th><th>Status</th><th>Pass No</th><th>Entry</th><th>Exit</th></tr></thead>
+      <tbody>
+        {% for h in history_records %}
+        <tr>
+          <td>#{{ h.visit_id }}</td><td>{{ h.visit_date }}</td><td style="font-weight: 600;">{{ h.visitor_name }}</td><td><code>{{ h.visitor_phone }}</code></td>
+          <td>{{ h.resident_name }} ({{ h.flat_no }})</td><td>{{ h.purpose }}</td><td>{{ h.guard }}</td>
+          <td><span class="badge badge-{{ h.approval_status|lower }}">{{ h.approval_status }}</span></td>
+          <td>{% if h.gate_pass_no %}<span class="gatepass-code">{{ h.gate_pass_no }}</span>{% else %}&mdash;{% endif %}</td>
+          <td>{{ h.entry_time.strftime('%d-%b %H:%M') if h.entry_time else '—' }}</td>
+          <td>{{ h.exit_time.strftime('%d-%b %H:%M') if h.exit_time else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="11" style="text-align: center; color: #64748b; padding: 2rem;">No records found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

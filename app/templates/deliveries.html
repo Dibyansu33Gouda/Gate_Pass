@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Deliveries Management - GatePass{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Deliveries & Courier Management</h1><p class="page-subtitle">Courier Logistics &bull; Receipt Tracking (Section 6.5)</p></div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+  <div class="card">
+    <div class="card-title">📦 Log Incoming Delivery</div>
+    <form method="POST" action="/deliveries/new">
+      <div class="form-group">
+        <label class="form-label" for="resident_id">Recipient Resident *</label>
+        <select id="resident_id" name="resident_id" class="form-control" required>
+          <option value="" disabled selected>-- Select Resident --</option>
+          {% for r in residents %}<option value="{{ r.resident_id }}">{{ r.flat_no }} — {{ r.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="agent_id">Courier Agent *</label>
+        <select id="agent_id" name="agent_id" class="form-control" required>
+          <option value="" disabled selected>-- Select Agent --</option>
+          {% for a in agents %}<option value="{{ a.agent_id }}">{{ a.courier_company }} — {{ a.agent_name }} ({{ a.phone }})</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="delivery_type">Category *</label>
+        <select id="delivery_type" name="delivery_type" class="form-control" required>
+          <option value="Courier">Courier / E-Commerce Parcel</option>
+          <option value="Food">Food / Grocery Delivery</option>
+          <option value="Other">Other / Miscellaneous</option>
+        </select>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">+ Log Arrival</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🚚 Register Delivery Agent</div>
+    <form method="POST" action="/deliveries/agent/new">
+      <div class="form-group">
+        <label class="form-label" for="agent_name">Agent Name *</label>
+        <input type="text" id="agent_name" name="agent_name" class="form-control" placeholder="e.g. Mukesh Kumar" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="phone">Phone (10 digits) *</label>
+        <input type="tel" id="phone" name="phone" class="form-control" placeholder="9711009988" pattern="[0-9]{10}" maxlength="10" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="courier_company">Courier Company *</label>
+        <input type="text" id="courier_company" name="courier_company" class="form-control" placeholder="e.g. Amazon, Zomato, BlueDart" required>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn btn-secondary btn-sm">+ Register Agent</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">
+    <span>Delivery Registry</span>
+    <div style="display: flex; gap: 0.35rem;">
+      <a href="/deliveries" class="btn btn-sm {% if status_filter == 'All' %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+      <a href="/deliveries?status_filter=Arrived" class="btn btn-sm {% if status_filter == 'Arrived' %}btn-primary{% else %}btn-secondary{% endif %}">Arrived</a>
+      <a href="/deliveries?status_filter=Received" class="btn btn-sm {% if status_filter == 'Received' %}btn-primary{% else %}btn-secondary{% endif %}">Received</a>
+      <a href="/deliveries?status_filter=Returned" class="btn btn-sm {% if status_filter == 'Returned' %}btn-primary{% else %}btn-secondary{% endif %}">Returned</a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Resident / Flat</th><th>Courier & Agent</th><th>Type</th><th>Status</th><th>Arrived</th><th>Received</th><th style="text-align: right;">Action</th></tr>
+      </thead>
+      <tbody>
+        {% for d in deliveries %}
+        <tr>
+          <td>#{{ d.delivery_id }}</td>
+          <td style="font-weight: 600;">{{ d.resident_name }} <span style="color: #64748b;">({{ d.flat_no }})</span></td>
+          <td><strong>{{ d.courier_company }}</strong><div style="font-size: 0.8rem; color: #64748b;">{{ d.agent_name }} ({{ d.agent_phone }})</div></td>
+          <td>{{ d.delivery_type }}</td>
+          <td><span class="badge badge-{{ d.status|lower }}">{{ d.status }}</span></td>
+          <td>{{ d.arrived_at.strftime('%d-%b %H:%M') if d.arrived_at else '—' }}</td>
+          <td>{{ d.received_at.strftime('%d-%b %H:%M') if d.received_at else '—' }}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            {% if d.status == 'Arrived' %}
+              <form method="POST" action="/deliveries/{{ d.delivery_id }}/receive" style="display: inline;"><button type="submit" class="btn btn-success btn-sm">✓ Received</button></form>
+              <form method="POST" action="/deliveries/{{ d.delivery_id }}/return" style="display: inline; margin-left: 0.25rem;"><button type="submit" class="btn btn-secondary btn-sm">Return</button></form>
+            {% else %}<span style="color: #94a3b8; font-size: 0.8rem;">Completed</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="text-align: center; color: #64748b; padding: 2rem;">No deliveries found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Resident Management - GatePass{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Resident Management</h1><p class="page-subtitle">Admin Directory &bull; Flat Index (idx_residents_flat) &bull; Soft Delete</p></div>
+</div>
+
+<div class="card">
+  <div class="card-title">Enroll New Resident</div>
+  <form method="POST" action="/residents/new">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label" for="name">Name *</label><input type="text" id="name" name="name" class="form-control" placeholder="e.g. Ananya Sen" required></div>
+      <div class="form-group"><label class="form-label" for="flat_no">Flat *</label><input type="text" id="flat_no" name="flat_no" class="form-control" placeholder="e.g. A-101" required></div>
+      <div class="form-group"><label class="form-label" for="phone">Phone (10 digits) *</label><input type="tel" id="phone" name="phone" class="form-control" placeholder="9811001199" pattern="[0-9]{10}" maxlength="10" required></div>
+      <div class="form-group"><label class="form-label" for="email">Email</label><input type="email" id="email" name="email" class="form-control" placeholder="resident@example.com"></div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">+ Add Resident</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-title">
+    <span>Enrolled Residents</span>
+    <form method="GET" action="/residents" class="search-form">
+      <input type="text" name="q" class="form-control" placeholder="Search name or flat..." value="{{ q }}" style="width: 220px;">
+      <button type="submit" class="btn btn-secondary btn-sm">Search</button>
+      {% if q %}<a href="/residents" class="btn btn-secondary btn-sm">Reset</a>{% endif %}
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>Flat</th><th>Name</th><th>Phone</th><th>Email</th><th>Visits</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for r in residents %}
+        <tr>
+          <td><strong style="color: #2563eb;">{{ r.flat_no }}</strong></td><td style="font-weight: 600;">{{ r.name }}</td><td><code>{{ r.phone }}</code></td>
+          <td>{{ r.email if r.email else '—' }}</td><td>{{ r.total_visits }}</td>
+          <td>{% if r.is_active %}<span class="badge badge-approved">Active</span>{% else %}<span class="badge badge-rejected">Inactive</span>{% endif %}</td>
+          <td>
+            <form method="POST" action="/residents/{{ r.resident_id }}/toggle-active" style="display: inline;">
+              <button type="submit" class="btn {% if r.is_active %}btn-danger{% else %}btn-success{% endif %} btn-sm">{% if r.is_active %}Deactivate{% else %}Activate{% endif %}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align: center; color: #64748b; padding: 1.5rem;">No residents found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

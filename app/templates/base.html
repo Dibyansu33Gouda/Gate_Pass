@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}GatePass{% endblock %} - Smart Visitor & Delivery System</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <a href="/" class="brand"><span>🛡️ GatePass</span><span class="tag">DBMS Project</span></a>
+    {% if user %}
+    <nav>
+      <ul class="nav-links">
+        {% if user.role == 'admin' %}
+          <li><a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">Dashboard</a></li>
+          <li><a href="/visitors" class="{% if request.url.path == '/visitors' %}active{% endif %}">Visitors</a></li>
+          <li><a href="/residents" class="{% if request.url.path == '/residents' %}active{% endif %}">Residents</a></li>
+          <li><a href="/staff" class="{% if request.url.path == '/staff' %}active{% endif %}">Staff</a></li>
+          <li><a href="/gate" class="{% if request.url.path == '/gate' %}active{% endif %}">Gate Ops</a></li>
+          <li><a href="/deliveries" class="{% if request.url.path == '/deliveries' %}active{% endif %}">Deliveries</a></li>
+          <li><a href="/history" class="{% if request.url.path == '/history' %}active{% endif %}">History</a></li>
+          <li><a href="/reports" class="{% if request.url.path == '/reports' %}active{% endif %}">SQL Reports</a></li>
+        {% elif user.role == 'security' %}
+          <li><a href="/gate" class="{% if request.url.path == '/gate' %}active{% endif %}">Gate Ops</a></li>
+          <li><a href="/visitors/new" class="{% if request.url.path == '/visitors/new' %}active{% endif %}">+ Register Visitor</a></li>
+          <li><a href="/visitors" class="{% if request.url.path == '/visitors' %}active{% endif %}">Visitors</a></li>
+          <li><a href="/deliveries" class="{% if request.url.path == '/deliveries' %}active{% endif %}">Deliveries</a></li>
+          <li><a href="/history" class="{% if request.url.path == '/history' %}active{% endif %}">History</a></li>
+        {% elif user.role == 'resident' %}
+          <li><a href="/approvals" class="{% if request.url.path == '/approvals' %}active{% endif %}">My Approvals & Gate Passes</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+    <div class="nav-user">
+      <span class="role-badge role-{{ user.role }}">{{ user.role }}</span>
+      <span style="font-size: 0.85rem; font-weight: 500;">{{ user.username }}</span>
+      <a href="/logout" class="btn-logout">Logout</a>
+    </div>
+    {% else %}
+    <div><a href="/login" class="btn btn-primary btn-sm">Login</a></div>
+    {% endif %}
+  </header>
+
+  <main class="container">
+    {% if msg %}<div class="alert alert-success"><span>✓</span> {{ msg }}</div>{% endif %}
+    {% if error %}<div class="alert alert-error"><span>⚠</span> {{ error }}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer><p>GatePass: Smart Visitor & Delivery Management System &bull; DBMS Project (Python + FastAPI + MySQL 8.0)</p></footer>
+</body>
+</html>

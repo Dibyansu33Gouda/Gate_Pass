@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - GatePass{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Admin Operations Dashboard</h1><p class="page-subtitle">Real-time society telemetry, gate activity, and visitor analytics</p></div>
+  <div style="display: flex; gap: 0.5rem;"><a href="/gate" class="btn btn-secondary btn-sm">Gate Operations</a><a href="/reports" class="btn btn-primary btn-sm">View SQL Reports</a></div>
+</div>
+
+<div class="grid-stats">
+  <div class="stat-card"><span class="stat-label">Active Residents</span><span class="stat-value">{{ stats.total_residents }}</span><span class="stat-desc">Enrolled society flats</span></div>
+  <div class="stat-card"><span class="stat-label">Today's Visitors</span><span class="stat-value" style="color: #2563eb;">{{ stats.today_visitors }}</span><span class="stat-desc">Registered today</span></div>
+  <div class="stat-card"><span class="stat-label">Visitors Inside</span><span class="stat-value" style="color: #0f766e;">{{ stats.visitors_inside }}</span><span class="stat-desc">Not yet exited</span></div>
+  <div class="stat-card"><span class="stat-label">Pending Approvals</span><span class="stat-value" style="color: #ca8a04;">{{ stats.pending_approvals }}</span><span class="stat-desc">Awaiting decision</span></div>
+  <div class="stat-card"><span class="stat-label">Deliveries Arrived</span><span class="stat-value" style="color: #0284c7;">{{ stats.arrived_deliveries }}</span><span class="stat-desc">Waiting for pickup</span></div>
+  <div class="stat-card"><span class="stat-label">Total Deliveries</span><span class="stat-value">{{ stats.total_deliveries }}</span><span class="stat-desc">{{ stats.received_deliveries }} received</span></div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 1.5rem;">
+  <div class="card">
+    <div class="card-title"><span>Latest Visits</span><a href="/history" style="font-size: 0.8rem; color: #2563eb; text-decoration: none;">View All &rarr;</a></div>
+    <div class="table-responsive">
+      <table>
+        <thead><tr><th>Visitor</th><th>Resident / Flat</th><th>Purpose</th><th>Status</th><th>Pass No</th></tr></thead>
+        <tbody>
+          {% for v in recent_visits %}
+          <tr>
+            <td style="font-weight: 600;">{{ v.visitor_name }}</td>
+            <td>{{ v.resident_name }} <span style="color: #64748b;">({{ v.flat_no }})</span></td>
+            <td>{{ v.purpose }}</td>
+            <td><span class="badge badge-{{ v.approval_status|lower }}">{{ v.approval_status }}</span></td>
+            <td>{% if v.gate_pass_no %}<span class="gatepass-code">{{ v.gate_pass_no }}</span>{% else %}&mdash;{% endif %}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" style="text-align: center; color: #64748b;">No recent visits found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>Recent Deliveries</span><a href="/deliveries" style="font-size: 0.8rem; color: #2563eb; text-decoration: none;">Manage &rarr;</a></div>
+    <div class="table-responsive">
+      <table>
+        <thead><tr><th>Resident / Flat</th><th>Courier</th><th>Type</th><th>Status</th><th>Arrived</th></tr></thead>
+        <tbody>
+          {% for d in recent_deliveries %}
+          <tr>
+            <td style="font-weight: 600;">{{ d.resident_name }} ({{ d.flat_no }})</td>
+            <td><strong>{{ d.courier_company }}</strong> <small style="color: #64748b;">({{ d.agent_name }})</small></td>
+            <td>{{ d.delivery_type }}</td>
+            <td><span class="badge badge-{{ d.status|lower }}">{{ d.status }}</span></td>
+            <td>{{ d.arrived_at.strftime('%d-%b %H:%M') if d.arrived_at else '&mdash;' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" style="text-align: center; color: #64748b;">No deliveries logged yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

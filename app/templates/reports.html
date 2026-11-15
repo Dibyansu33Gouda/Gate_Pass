@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}SQL Analytics & Reports - GatePass{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">DBMS SQL Analytical Demonstrations</h1>
+    <p class="page-subtitle">Demonstrates Joins, Aggregates, Group By, Subqueries & Query Evaluation (Section 7)</p>
+  </div>
+</div>
+
+<!-- Report 1: Subquery with HAVING (Section 7, Query 6) -->
+<div class="card" style="border-left: 4px solid #7c3aed;">
+  <div class="card-title">
+    <div>
+      <span style="color: #6d28d9; font-weight: 700;">1. Nested Subquery with HAVING:</span>
+      <span>Residents with Above-Average Visits</span>
+    </div>
+    <span class="badge" style="background-color: #ede9fe; color: #5b21b6;">Society Average: {{ society_avg }} visits/resident</span>
+  </div>
+  <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.75rem;">
+    <strong>SQL Logic:</strong> <code>HAVING COUNT(*) &gt; (SELECT AVG(cnt) FROM (SELECT COUNT(*) AS cnt FROM visits GROUP BY resident_id) AS per_resident)</code>
+  </p>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>Resident Name</th><th>Flat No</th><th>Total Visits</th><th>Comparison</th></tr></thead>
+      <tbody>
+        {% for r in above_avg_residents %}
+        <tr>
+          <td style="font-weight: 600;">{{ r.name }}</td>
+          <td><strong style="color: #2563eb;">{{ r.flat_no }}</strong></td>
+          <td><strong>{{ r.total_visits }}</strong> visits</td>
+          <td><span class="badge badge-approved">+{{ (r.total_visits - society_avg)|round(2) }} above average</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="text-align: center; color: #64748b;">No residents currently exceed average.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+  <!-- Report 2: GROUP BY + COUNT (Section 7, Query 4) -->
+  <div class="card">
+    <div class="card-title"><span>2. GROUP BY + COUNT: Visits Hosted Per Resident</span></div>
+    <div class="table-responsive">
+      <table>
+        <thead><tr><th>Resident</th><th>Flat</th><th>Total Visits</th></tr></thead>
+        <tbody>
+          {% for r in visits_per_resident %}
+          <tr>
+            <td style="font-weight: 600;">{{ r.name }}</td><td>{{ r.flat_no }}</td><td><strong style="color: #2563eb;">{{ r.total_visits }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Report 3: Deliveries and Daily Stats (Section 7, Query 5) -->
+  <div class="card">
+    <div class="card-title"><span>3. Aggregate Functions: Daily Volume & Deliveries</span></div>
+    <div class="table-responsive" style="margin-bottom: 1rem;">
+      <table>
+        <thead><tr><th>Date</th><th>Total Visitors Logged</th></tr></thead>
+        <tbody>
+          {% for d in daily_counts %}
+          <tr><td>{{ d.visit_date }}</td><td><strong>{{ d.visitor_count }}</strong></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead><tr><th>Status (ENUM)</th><th>Count</th></tr></thead>
+        <tbody>
+          {% for s in delivery_status_counts %}
+          <tr><td><span class="badge badge-{{ s.status|lower }}">{{ s.status }}</span></td><td><strong>{{ s.count }}</strong></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Report 4: LEFT JOIN Demonstration (Section 7, Query 3) -->
+<div class="card" style="border-left: 4px solid #0284c7;">
+  <div class="card-title">
+    <span>4. LEFT JOIN Demonstration: All Residents and Deliveries</span>
+    <span class="badge" style="background: #e0f2fe; color: #0369a1;">Includes Residents with NULL Deliveries</span>
+  </div>
+  <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.75rem;">
+    <strong>SQL Logic:</strong> <code>SELECT ... FROM residents r LEFT JOIN deliveries d ON r.resident_id = d.resident_id</code> (e.g. Vikram Malhotra has <code>NULL</code> delivery attributes).
+  </p>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>Resident Name</th><th>Flat</th><th>Delivery ID</th><th>Type</th><th>Status</th><th>Arrival Timestamp</th></tr></thead>
+      <tbody>
+        {% for d in left_join_deliveries %}
+        <tr>
+          <td style="font-weight: 600;">{{ d.resident_name }}</td>
+          <td>{{ d.flat_no }}</td>
+          <td>{% if d.delivery_id %}#{{ d.delivery_id }}{% else %}<span class="badge" style="background:#f1f5f9;color:#64748b;">NULL</span>{% endif %}</td>
+          <td>{{ d.delivery_type if d.delivery_type else '&mdash;' }}</td>
+          <td>{% if d.delivery_status %}<span class="badge badge-{{ d.delivery_status|lower }}">{{ d.delivery_status }}</span>{% else %}&mdash;{% endif %}</td>
+          <td>{{ d.arrived_at.strftime('%d-%b %Y %H:%M') if d.arrived_at else '&mdash;' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

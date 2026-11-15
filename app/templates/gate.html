@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Gate Operations - GatePass{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1 class="page-title">Main Gate Operations: Entry & Exit Control</h1><p class="page-subtitle">Security Console &bull; Timestamp Logging &bull; CHECK Constraint (Section 6.3 & 6.4)</p></div>
+  <div><a href="/visitors/new" class="btn btn-primary btn-sm">+ Register Incoming Visitor</a></div>
+</div>
+
+<div class="card" style="border-top: 4px solid #0f766e;">
+  <div class="card-title"><span>🟢 Visitors Currently Inside Society</span><span class="badge badge-inside">{{ visitors_inside|length }} Inside</span></div>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>Pass No</th><th>Visitor Name</th><th>Phone</th><th>Resident / Flat</th><th>Purpose</th><th>Entry Time</th><th style="text-align: right;">Action</th></tr></thead>
+      <tbody>
+        {% for v in visitors_inside %}
+        <tr>
+          <td><span class="gatepass-code">{{ v.gate_pass_no }}</span></td>
+          <td style="font-weight: 700;">{{ v.visitor_name }}</td>
+          <td><code>{{ v.visitor_phone }}</code></td>
+          <td>{{ v.resident_name }} <span style="color: #64748b;">({{ v.flat_no }})</span></td>
+          <td>{{ v.purpose }}</td>
+          <td style="color: #0f766e; font-weight: 600;">{{ v.entry_time.strftime('%d-%b %H:%M') if v.entry_time else '—' }}</td>
+          <td style="text-align: right;">
+            <form method="POST" action="/gate/{{ v.visit_id }}/exit" style="display: inline;">
+              <button type="submit" class="btn btn-danger btn-sm">Log Exit ➔</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align: center; color: #64748b; padding: 1.5rem;">No visitors currently inside.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="border-top: 4px solid #2563eb;">
+  <div class="card-title"><span>🔵 Approved Visits Awaiting Arrival</span><span class="badge badge-approved">{{ waiting_for_entry|length }} Ready</span></div>
+  <div class="table-responsive">
+    <table>
+      <thead><tr><th>Pass No</th><th>Visitor Name</th><th>Phone</th><th>Resident / Flat</th><th>Purpose</th><th>Date</th><th style="text-align: right;">Action</th></tr></thead>
+      <tbody>
+        {% for v in waiting_for_entry %}
+        <tr>
+          <td><span class="gatepass-code">{{ v.gate_pass_no }}</span></td>
+          <td style="font-weight: 700;">{{ v.visitor_name }}</td>
+          <td><code>{{ v.visitor_phone }}</code></td>
+          <td>{{ v.resident_name }} <span style="color: #64748b;">({{ v.flat_no }})</span></td>
+          <td>{{ v.purpose }}</td>
+          <td>{{ v.visit_date }}</td>
+          <td style="text-align: right;">
+            <form method="POST" action="/gate/{{ v.visit_id }}/entry" style="display: inline;">
+              <button type="submit" class="btn btn-success btn-sm">➔ Record Entry</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align: center; color: #64748b; padding: 1.5rem;">No approved visitors waiting to enter.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

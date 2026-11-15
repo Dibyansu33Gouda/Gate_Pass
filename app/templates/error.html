@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - GatePass{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 4rem auto; text-align: center;">
+  <div class="card" style="padding: 2.5rem 1.5rem;">
+    <div style="font-size: 3rem; margin-bottom: 0.5rem;">
+      {% if status_code == 403 %}🚫{% elif status_code == 404 %}🔍{% else %}⚠️{% endif %}
+    </div>
+    <h2 style="font-size: 1.5rem; color: #1e293b; margin-bottom: 0.5rem;">{{ title }} ({{ status_code }})</h2>
+    <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem;">
+      {{ message }}
+    </p>
+    <div>
+      <a href="/" class="btn btn-primary btn-sm">&larr; Return to Home</a>
+      {% if not user %}
+        <a href="/login" class="btn btn-secondary btn-sm">Login Page</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
